@@ -527,6 +527,9 @@ class _CartHistoryPageView extends StatelessWidget {
 
 class _settingspage extends StatelessWidget {
   User currentuser;
+  final TextEditingController cardNumberController = TextEditingController();
+  final TextEditingController expiryDateController = TextEditingController();
+  final TextEditingController securityCodeController = TextEditingController();
 
   _settingspage(this.currentuser);
 
@@ -538,7 +541,103 @@ class _settingspage extends StatelessWidget {
         title: Text("Settings"),
       ),
       body: Column(
+        children: [
+          Padding(padding: EdgeInsets.all(24.0),
+            child: Row(
+              children: [
+                const Text("Name: "),
+                Expanded(child: TextFormField(
+                  initialValue: currentuser.name,
+                  onChanged: (text){
+                    currentuser.name = text;
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder()
+                  ),
+                ))
+              ],
+            ),
+          ),
+          SizedBox(height: 24),
+          Text(
+            "Add New Payment Method",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 8),
+          TextField(
+            controller: cardNumberController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: "Credit Card Number",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 16),
 
+          // Expiry Date
+          TextField(
+            controller: expiryDateController,
+            keyboardType: TextInputType.datetime,
+            decoration: InputDecoration(
+              labelText: "Expiry Date (MM/YY)",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 16),
+
+          // Security Code
+          TextField(
+            controller: securityCodeController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: "Security Code (CVV)",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 24),
+
+          // Add Payment Method Button
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                // Validate inputs
+                if (cardNumberController.text.isEmpty ||
+                    expiryDateController.text.isEmpty ||
+                    securityCodeController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("All fields are required!")),
+                  );
+                  return;
+                }
+
+                // Add new payment method
+                try {
+                  final newPaymentMethod = Paymentmethod(
+                    cardNumberController.text,
+                    expiryDateController.text,
+                    int.parse(securityCodeController.text),
+                  );
+                  currentuser.addpaymentmethod(newPaymentMethod);
+
+                  // Clear fields
+                  cardNumberController.clear();
+                  expiryDateController.clear();
+                  securityCodeController.clear();
+
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Payment method added successfully!")),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Invalid input: $e")),
+                  );
+                }
+              },
+              child: Text("Add Payment Method"),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -549,7 +648,6 @@ class _checkoutpage extends StatelessWidget{
   Cart newcart;
 
   _checkoutpage(this.currentuser, this.newcart);
-
 
   @override
   Widget build(BuildContext context) {
