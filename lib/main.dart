@@ -24,10 +24,18 @@ class MyApp extends StatelessWidget {
 
 Item coke = Item(001, "12pk Coca Cola", "https://i5.walmartimages.com/asr/f810b124-f8a0-4a93-82d2-3e770ea24345.361d24791354ad16ecc48cff4ceee35e.jpeg?odnHeight=2000&odnWidth=2000&odnBg=FFFFFF", 12.91);
 Item pringles = Item(002, "Pringles 500g", "https://voila.ca/images-v3/2d92d19c-0354-49c0-8a91-5260ed0bf531/57dda498-e3a1-4944-b874-c58fff63365c/500x500.jpg", 4.99);
-Item chickenstrips = Item(003, "Janes Chicken Tenders", "itemimgurl", 12.91);
-Item cucumber = Item(004, "Cucumber", "itemimgurl", 3.99);
+Item chickenstrips = Item(003, "Janes Chicken Tenders", "http://i.bungo.ca/u/Es7SGJ.png", 12.91);
+Item cucumber = Item(004, "Cucumber", "https://i5.walmartimages.ca/images/Enlarge/840/154/6000205840154.jpg?odnHeight=2000&odnWidth=2000&odnBg=FFFFFF", 3.99);
+Item carrots = Item(005, "Carrots 50g", "https://i5.walmartimages.ca/images/Enlarge/328/479/6000207328479.jpg", 2.50);
+Item Oreo = Item(006, "Oreo cookies 495g", "https://i5.walmartimages.com/asr/db7d72d9-68da-4ee2-9838-ea45824ff7af.3327e3c6c5731b6a6190eba573c8a8f9.jpeg?odnHeight=2000&odnWidth=2000&odnBg=FFFFFF", 3.45);
+Item dietcoke = Item(007, "12pk Diet Coca Cola", "http://i.bungo.ca/u/FIsdyL.png", 12.91);
+
 
 Cart cart1 = Cart([coke, pringles], "2024-11-28");
+Cart cart2 = Cart([carrots,chickenstrips,Oreo,cucumber], "2024-11-03");
+Cart cart3 = Cart([coke,pringles, chickenstrips, cucumber, carrots, Oreo, dietcoke], "2024-10-20");
+
+User user1 = User([cart1, cart2, cart3], "Josh");
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -51,9 +59,16 @@ class _MyHomePageState extends State<MyHomePage> {
             //Go to cart history
             final result = await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => _CartHistoryPage([cart1]))
+              MaterialPageRoute(builder: (context) => _CartHistoryPage(user1))
             );
-          }, icon: const Icon(Icons.history))
+          }, icon: const Icon(Icons.history)),
+          IconButton(
+              onPressed: () async{
+                final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => _settingspage(user1))
+                );
+              }, icon: const Icon(Icons.settings))
         ],
       ),
       body: Center(
@@ -84,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class _scannerpage extends StatelessWidget{
-  Cart currentcart = new Cart([], "2024-11-28");
+  Cart currentcart = new Cart([], "${DateTime.now()}");
 
 
   @override
@@ -118,25 +133,25 @@ class _scannerpage extends StatelessWidget{
 }
 
 class _CartHistoryPage extends StatelessWidget{
-  List<Cart> carthistorylist;
-  _CartHistoryPage(this.carthistorylist);
+  User user;
+  _CartHistoryPage(this.user);
 
   @override
   Widget build(BuildContext context) {
-    print(carthistorylist.length);
+    print(user.history.length);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Cart History"),
       ),
       body:ListView.separated(
-            itemCount: carthistorylist.length,
+            itemCount: user.history.length,
             itemBuilder: (BuildContext context, int index){
               return GestureDetector(
                 onTap: () async{
                   final result = await Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => _cartpageview(carthistorylist[index]))
+                      MaterialPageRoute(builder: (context) => _cartpageview(user.history[index]))
                   );
                 },
                 child: Container(
@@ -145,7 +160,8 @@ class _CartHistoryPage extends StatelessWidget{
                       side: BorderSide(color: Colors.grey, width: 1),
                       borderRadius: BorderRadius.circular(5)
                     ),
-                    title: Text(carthistorylist[index].date),
+                    title: Text(user.history[index].date),
+                    trailing: Text("${(user.history[index].gettotalwithtax()).toStringAsFixed(2)}"),
                   ),
                 ),
               );
@@ -201,4 +217,21 @@ class _cartpageview extends StatelessWidget {
       ),
     );
   }
+}
+
+class _settingspage extends StatelessWidget{
+  User currentuser;
+
+  _settingspage(this.currentuser);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text("Settings"),
+      ),
+    );
+  }
+
 }

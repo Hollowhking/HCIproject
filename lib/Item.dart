@@ -24,4 +24,20 @@ class Cart{
     }
     return total;
   }
+
+  double gettotalwithtax(){
+    return (gettotal() + (gettotal()*0.13));
+  }
+}
+
+class User{
+  List<Cart> history;
+  String name;
+
+
+  User(this.history, this.name);
+
+  void addcart(Cart newcart){
+    history.add(newcart);
+  }
 }
