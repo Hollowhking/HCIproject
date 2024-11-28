@@ -161,7 +161,7 @@ class _ScannerPage extends StatefulWidget {
 }
 
 class _ScannerPageState extends State<_ScannerPage> {
-  final Cart currentCart = Cart([], "2024-11-28");
+  Cart currentCart = Cart([], "2024-11-28");
   late CameraController _controller;
 
   Item? activeItem;
@@ -207,7 +207,16 @@ class _ScannerPageState extends State<_ScannerPage> {
               const Spacer(),
               IconButton(
                   alignment: Alignment.bottomRight,
-                  onPressed: () => {},
+                  onPressed: () async {
+                    final result = await Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return _CartPageView(currentCart);
+                    }));
+
+                    if (result == null && result is! Cart) return;
+
+                    currentCart = result!;
+                  },
                   icon: const Icon(Icons.shopping_cart)),
             ])),
         body: Column(
@@ -324,6 +333,74 @@ class _ScannerPageState extends State<_ScannerPage> {
   }
 }
 
+class _CartPageView extends StatelessWidget {
+  final Cart cart;
+
+  const _CartPageView(this.cart);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text("Cart: ${cart.date}"),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              itemCount: cart.items.length,
+              itemBuilder: (BuildContext context, int index) {
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.green)),
+                      ),
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.25,
+                          child: Image.network(cart.items[index].itemimgurl)),
+                      Padding(padding: EdgeInsets.all(3)),
+                      Text(cart.items[index].itemname),
+                      Spacer(),
+                      Text("${cart.items[index].cost}"),
+                      Padding(padding: EdgeInsets.all(3)),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.remove, color: Colors.white),
+                        style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) =>
+                  const Divider(),
+            ),
+          ),
+          BottomAppBar(
+            child: Row(
+              children: [
+                Spacer(),
+                Column(
+                  children: [
+                    Text("Tax: ${(cart.gettotal() * 0.13).toStringAsFixed(2)}"),
+                    Text(
+                        "Total: ${(cart.gettotal() + (cart.gettotal() * 0.13)).toStringAsFixed(2)}"),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CartHistoryPage extends StatelessWidget {
   User user;
   _CartHistoryPage(this.user);
@@ -345,7 +422,7 @@ class _CartHistoryPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            _cartpageview(user.history[index])));
+                            _CartHistoryPageView(user.history[index])));
               },
               child: Container(
                 child: ListTile(
@@ -365,10 +442,10 @@ class _CartHistoryPage extends StatelessWidget {
   }
 }
 
-class _cartpageview extends StatelessWidget {
+class _CartHistoryPageView extends StatelessWidget {
   final Cart cart;
 
-  _cartpageview(this.cart);
+  _CartHistoryPageView(this.cart);
 
   @override
   Widget build(BuildContext context) {
