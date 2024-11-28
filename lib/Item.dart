@@ -12,4 +12,8 @@ class Cart{
   String date;
 
   Cart(this.items, this.date);
+
+  void additem(Item item){
+    items.add(item);
+  }
 }
