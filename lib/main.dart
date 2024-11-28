@@ -86,7 +86,9 @@ Cart cart3 = Cart(
     [coke, pringles, chickenstrips, cucumber, carrots, oreo, dietcoke],
     "2024-10-20");
 
-User user1 = User([cart1, cart2, cart3], "Josh");
+Paymentmethod creditcard1 = Paymentmethod("0000 0000 0000 0000", "12/35", 000);
+
+User user1 = User([cart1, cart2, cart3], "Josh", [creditcard1]);
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.camera});
@@ -424,6 +426,9 @@ class _settingspage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Settings"),
+      ),
+      body: Column(
+
       ),
     );
   }

@@ -33,11 +33,23 @@ class Cart{
 class User{
   List<Cart> history;
   String name;
+  List<Paymentmethod> paymentmethods;
 
-
-  User(this.history, this.name);
+  User(this.history, this.name, this.paymentmethods);
 
   void addcart(Cart newcart){
     history.add(newcart);
   }
+
+  void addpaymentmethod(Paymentmethod newmethod){
+    paymentmethods.add(newmethod);
+  }
+}
+
+class Paymentmethod{
+  String creditcartnumber;
+  String expirydate;
+  int securitycode;
+
+  Paymentmethod(this.creditcartnumber, this.expirydate, this.securitycode);
 }
