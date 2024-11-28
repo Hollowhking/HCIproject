@@ -186,7 +186,6 @@ class _ScannerPageState extends State<_ScannerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         bottomNavigationBar: BottomAppBar(
-            color: Colors.black,
             child: Row(children: [
               ElevatedButton(
                   onPressed: () async {
@@ -205,10 +204,9 @@ class _ScannerPageState extends State<_ScannerPage> {
                     setState(() {});
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text("Random Item")),
+                  child: const Text("Random Item", style: TextStyle(color: Colors.white),)),
               const Spacer(),
               IconButton(
-                  alignment: Alignment.bottomRight,
                   onPressed: () async {
                     final result = await Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
@@ -219,7 +217,8 @@ class _ScannerPageState extends State<_ScannerPage> {
 
                     currentCart = result!;
                   },
-                  icon: const Icon(Icons.shopping_cart)),
+                  style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.green)),
+                  icon: const Icon(Icons.shopping_cart, color: Colors.white,)),
             ])),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -335,43 +334,58 @@ class _ScannerPageState extends State<_ScannerPage> {
   }
 }
 
-class _CartPageView extends StatelessWidget {
+
+class _CartPageView extends StatefulWidget {
+
   final Cart cart;
 
-  const _CartPageView(this.cart);
+  _CartPageView(this.cart);
+
+  @override
+  State<StatefulWidget> createState() => _CartPageViewState();
+
+}
+
+class _CartPageViewState extends State<_CartPageView> {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text("Cart: ${cart.date}"),
+        title: Text("Cart: ${widget.cart.date}"),
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.separated(
-              itemCount: cart.items.length,
+              itemCount: widget.cart.items.length,
               itemBuilder: (BuildContext context, int index) {
                 return SizedBox(
                   width: MediaQuery.of(context).size.width * 0.9,
                   child: Row(
                     children: [
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          widget.cart.additem(widget.cart.items[index]);
+                          setState(() {});
+                        },
                         icon: const Icon(Icons.add, color: Colors.white),
                         style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.green)),
                       ),
                       SizedBox(
                           width: MediaQuery.of(context).size.width * 0.25,
-                          child: Image.network(cart.items[index].itemimgurl)),
+                          child: Image.network(widget.cart.items[index].itemimgurl)),
                       Padding(padding: EdgeInsets.all(3)),
-                      Text(cart.items[index].itemname),
+                      Text(widget.cart.items[index].itemname),
                       Spacer(),
-                      Text("${cart.items[index].cost}"),
+                      Text("${widget.cart.items[index].cost}"),
                       Padding(padding: EdgeInsets.all(3)),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          widget.cart.removeItem(widget.cart.items[index]);
+                          setState(() {});
+                        },
                         icon: const Icon(Icons.remove, color: Colors.white),
                         style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.red)),
                       ),
@@ -386,14 +400,14 @@ class _CartPageView extends StatelessWidget {
           BottomAppBar(
             child: Row(
               children: [
-                Spacer(),
                 Column(
                   children: [
-                    Text("Tax: ${(cart.gettotal() * 0.13).toStringAsFixed(2)}"),
-                    Text(
-                        "Total: ${(cart.gettotal() + (cart.gettotal() * 0.13)).toStringAsFixed(2)}"),
+                    Text("Tax: ${(widget.cart.gettotal() * 0.13).toStringAsFixed(2)}"),
+                    Text("Total: ${(widget.cart.gettotal() + (widget.cart.gettotal() * 0.13)).toStringAsFixed(2)}"),
                   ],
-                )
+                ),
+                const Spacer(),
+                ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: Colors.green), child: Text("Checkout", style: TextStyle(color: Colors.white),))
               ],
             ),
           ),
@@ -475,12 +489,11 @@ class _CartHistoryPageView extends StatelessWidget {
           BottomAppBar(
             child: Row(
               children: [
-                Spacer(),
+                const Spacer(),
                 Column(
                   children: [
                     Text("Tax: ${(cart.gettotal() * 0.13).toStringAsFixed(2)}"),
-                    Text(
-                        "Total: ${(cart.gettotal() + (cart.gettotal() * 0.13)).toStringAsFixed(2)}"),
+                    Text("Total: ${(cart.gettotal() + (cart.gettotal() * 0.13)).toStringAsFixed(2)}"),
                   ],
                 )
               ],

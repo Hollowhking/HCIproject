@@ -17,6 +17,10 @@ class Cart{
     items.add(item);
   }
 
+  void removeItem(Item item) {
+    items.remove(item);
+  }
+
   double gettotal(){
     double total = 0;
     for (int i=0; i< items.length; i++){
