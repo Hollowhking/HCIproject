@@ -1,13 +1,28 @@
+import 'dart:math';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import 'Item.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Ensures Flutter is fully initialized before using asynchronous calls
+
+  // Fetch the list of available cameras on the device
+  final cameras = await availableCameras();
+  final firstCamera = cameras
+      .first; // Select the first camera in the list (usually the back camera)
+
+  runApp(MyApp(
+    camera: firstCamera,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.camera});
+
+  final CameraDescription camera;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +32,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'InstaCart'),
+      home: MyHomePage(
+        title: 'InstaCart',
+        camera: camera,
+      ),
     );
   }
 }
@@ -31,6 +49,8 @@ Item Oreo = Item(006, "Oreo cookies 495g", "https://i5.walmartimages.com/asr/db7
 Item dietcoke = Item(007, "12pk Diet Coca Cola", "http://i.bungo.ca/u/FIsdyL.png", 12.91);
 
 
+List<Item> items = [coke, pringles, chickenstrips];
+
 Cart cart1 = Cart([coke, pringles], "2024-11-28");
 Cart cart2 = Cart([carrots,chickenstrips,Oreo,cucumber], "2024-11-03");
 Cart cart3 = Cart([coke,pringles, chickenstrips, cucumber, carrots, Oreo, dietcoke], "2024-10-20");
@@ -38,16 +58,16 @@ Cart cart3 = Cart([coke,pringles, chickenstrips, cucumber, carrots, Oreo, dietco
 User user1 = User([cart1, cart2, cart3], "Josh");
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.camera});
 
   final String title;
+  final CameraDescription camera;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,21 +96,20 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-                onPressed: () async{
+                onPressed: () async {
                   final result = await Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => _scannerpage())
-                  );
+                      MaterialPageRoute(
+                          builder: (context) => _ScannerPage(
+                                camera: widget.camera,
+                              )));
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50)
-                  )
-                ),
-                child: const Text("New Cart")
-            )
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50))),
+                child: const Text("New Cart"))
           ],
         ),
       ),
@@ -98,37 +117,98 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class _scannerpage extends StatelessWidget{
+class _ScannerPage extends StatefulWidget {
+  final CameraDescription camera;
+  _ScannerPage({required this.camera});
   Cart currentcart = new Cart([], "${DateTime.now()}");
 
+  @override
+  State<StatefulWidget> createState() => _ScannerPageState();
+}
+
+class _ScannerPageState extends State<_ScannerPage> {
+  final Cart currentCart = Cart([], "2024-11-28");
+  late CameraController _controller;
+
+  Item? activeItem;
+
+  late Future<void>
+      _initializeControllerFuture; // Future to track initialization status
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = CameraController(
+      widget.camera, // Use the camera passed from the parent widget
+      ResolutionPreset.high, // Set the video resolution to high
+    );
+
+    _initializeControllerFuture = _controller.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.black,
-        child: Row(
-          children: [
-            ElevatedButton(
-                onPressed: () =>{
-
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red
-                ),
-                child: Text("Random Item")),
-                Spacer(),
-                IconButton(
-                  alignment: Alignment.bottomRight,
-                  onPressed: () =>{
-  
+        bottomNavigationBar: BottomAppBar(
+            color: Colors.black,
+            child: Row(children: [
+              ElevatedButton(
+                  onPressed: () {
+                    activeItem = items[Random().nextInt(items.length)];
+                    setState(() {});
                   },
-                icon: Icon(Icons.shopping_cart)
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text("Random Item")),
+              const Spacer(),
+              IconButton(
+                  alignment: Alignment.bottomRight,
+                  onPressed: () => {},
+                  icon: const Icon(Icons.shopping_cart)),
+            ])),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Scan Your Items",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32),
             ),
-          ]
-        )
-      )
-    );
+            const Padding(padding: EdgeInsets.all(20)),
+            Center(
+              child: Stack(
+                children: [
+                  Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 10)),
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      height: MediaQuery.of(context).size.width * 0.8,
+                      child: FutureBuilder(
+                          future: _initializeControllerFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState !=
+                                ConnectionState.done) {
+                              return const CircularProgressIndicator();
+                            }
+
+                            return CameraPreview(_controller);
+                          }),
+                    ),
+                  ),
+                  if (activeItem != null)
+                    Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 10)),
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        height: MediaQuery.of(context).size.width * 0.8,
+                        child: Image.network("http://i.bungo.ca/u/Te0ZXu.png"),
+                      ),
+                    )
+                ],
+              ),
+            ),
+          ],
+        ));
   }
 }
 
