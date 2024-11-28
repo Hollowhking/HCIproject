@@ -131,24 +131,35 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-                onPressed: () async {
-                  final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => _ScannerPage(
-                                camera: widget.camera,
-                              )));
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50))),
-                child: const Text("New Cart"))
-          ],
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.5,
+              height: MediaQuery.of(context).size.height * 0.08,
+              child: ElevatedButton(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => _ScannerPage(
+                              camera: widget.camera,
+                            )));
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50))),
+                  child: Row(
+                    children: [
+                      Icon(Icons.shopping_cart),
+                      Padding(padding: EdgeInsets.all(15)),
+                      Text("New Cart")
+                    ],
+                  )
+              ,
+            ),
         ),
-      ),
+      ])
+      )
     );
   }
 }
@@ -407,7 +418,16 @@ class _CartPageViewState extends State<_CartPageView> {
                   ],
                 ),
                 const Spacer(),
-                ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: Colors.green), child: Text("Checkout", style: TextStyle(color: Colors.white),))
+                ElevatedButton(onPressed: () async{
+                  final result = await Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return _checkoutpage(user1, widget.cart);
+                  }));
+                }, style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green),
+                    child: Text("Checkout",
+                      style: TextStyle(color: Colors.white)
+                    ))
               ],
             ),
           ),
@@ -519,6 +539,108 @@ class _settingspage extends StatelessWidget {
       ),
       body: Column(
 
+      ),
+    );
+  }
+}
+
+class _checkoutpage extends StatelessWidget{
+  User currentuser;
+  Cart newcart;
+
+  _checkoutpage(this.currentuser, this.newcart);
+
+
+  @override
+  Widget build(BuildContext context) {
+
+    Paymentmethod selectedPaymentMethod = currentuser.paymentmethods.first;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Checkout"),
+        centerTitle: true,
+      ),
+      body: Padding(
+          padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Hello, ${currentuser.name}',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Total Cost:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '\$${newcart.gettotalwithtax().toStringAsFixed(2)}',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
+            ),
+            SizedBox(height: 24),
+            Text(
+              'Select Payment Method:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 8),
+            DropdownButton<Paymentmethod>(
+              value: selectedPaymentMethod,
+              items: currentuser.paymentmethods
+                  .map((method) => DropdownMenuItem<Paymentmethod>(
+                value: method,
+                  child: Text('Card ending in ${method.creditcartnumber.substring(method.creditcartnumber.length - 4)}')              ))
+                  .toList(),
+              onChanged: (newMethod) {
+                if (newMethod != null) {
+                  selectedPaymentMethod = newMethod;
+                }
+              },
+              isExpanded: true,
+            ),
+            SizedBox(height: 32),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Add the cart to the user's purchase history
+                  currentuser.history = List.from(currentuser.history)..add(newcart);
+
+                  // Show a confirmation dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Purchase Confirmed'),
+                        content: Text('Your order has been successfully placed!'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.pop(context);
+                              Navigator.pop(context);
+                              Navigator.pop(context); // Return all the way home
+                            },
+                            child: Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.greenAccent,
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                ),
+                child: Text(
+                  'Submit Order',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+          ],
+        )
       ),
     );
   }
