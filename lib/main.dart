@@ -22,9 +22,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Item coke = Item(001, "12pk Coca Cola", "itemimgurl", 12.91);
-Item pringles = Item(002, "Pringles 500g", "itemimgurl", 4.99);
+Item coke = Item(001, "12pk Coca Cola", "https://i5.walmartimages.com/asr/f810b124-f8a0-4a93-82d2-3e770ea24345.361d24791354ad16ecc48cff4ceee35e.jpeg?odnHeight=2000&odnWidth=2000&odnBg=FFFFFF", 12.91);
+Item pringles = Item(002, "Pringles 500g", "https://voila.ca/images-v3/2d92d19c-0354-49c0-8a91-5260ed0bf531/57dda498-e3a1-4944-b874-c58fff63365c/500x500.jpg", 4.99);
 Item chickenstrips = Item(003, "Janes Chicken Tenders", "itemimgurl", 12.91);
+Item cucumber = Item(004, "Cucumber", "itemimgurl", 3.99);
 
 Cart cart1 = Cart([coke, pringles], "2024-11-28");
 
@@ -101,12 +102,12 @@ class _scannerpage extends StatelessWidget{
                   backgroundColor: Colors.red
                 ),
                 child: Text("Random Item")),
-            Spacer(),
-            IconButton(
-                alignment: Alignment.bottomRight,
-                onPressed: () =>{
-
-                },
+                Spacer(),
+                IconButton(
+                  alignment: Alignment.bottomRight,
+                  onPressed: () =>{
+  
+                  },
                 icon: Icon(Icons.shopping_cart)
             ),
           ]
@@ -133,10 +134,17 @@ class _CartHistoryPage extends StatelessWidget{
             itemBuilder: (BuildContext context, int index){
               return GestureDetector(
                 onTap: () async{
-
+                  final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => _cartpageview(carthistorylist[index]))
+                  );
                 },
                 child: Container(
                   child: ListTile(
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Colors.grey, width: 1),
+                      borderRadius: BorderRadius.circular(5)
+                    ),
                     title: Text(carthistorylist[index].date),
                   ),
                 ),
@@ -147,4 +155,50 @@ class _CartHistoryPage extends StatelessWidget{
     );
   }
   
+}
+
+class _cartpageview extends StatelessWidget {
+  final Cart cart;
+
+  _cartpageview(this.cart);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text("Cart: ${cart.date}"),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              itemCount: cart.items.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  leading: Image.network(cart.items[index].itemimgurl),
+                  title: Text(cart.items[index].itemname),
+                  trailing: Text("${cart.items[index].cost}"),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) => const Divider(),
+            ),
+          ),
+          BottomAppBar(
+            child: Row(
+              children: [
+                Spacer(),
+                Column(
+                  children: [
+                    Text("Tax: ${(cart.gettotal()*0.13).toStringAsFixed(2)}"),
+                    Text("Total: ${(cart.gettotal() + (cart.gettotal()*0.13)).toStringAsFixed(2)}"),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -16,4 +16,12 @@ class Cart{
   void additem(Item item){
     items.add(item);
   }
+
+  double gettotal(){
+    double total = 0;
+    for (int i=0; i< items.length; i++){
+      total += items[i].cost;
+    }
+    return total;
+  }
 }
