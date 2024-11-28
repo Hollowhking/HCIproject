@@ -153,8 +153,18 @@ class _ScannerPageState extends State<_ScannerPage> {
             color: Colors.black,
             child: Row(children: [
               ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     activeItem = items[Random().nextInt(items.length)];
+                    setState(() {});
+
+                    await Future.delayed(const Duration(seconds: 3));
+                    final result = await await _addItemToCartDialog(activeItem!);
+
+                    if(result != null && result) {
+                      cart1.additem(activeItem!);
+                    }
+
+                    activeItem = null;
                     setState(() {});
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -189,7 +199,6 @@ class _ScannerPageState extends State<_ScannerPage> {
                                 ConnectionState.done) {
                               return const CircularProgressIndicator();
                             }
-
                             return CameraPreview(_controller);
                           }),
                     ),
@@ -209,6 +218,67 @@ class _ScannerPageState extends State<_ScannerPage> {
             ),
           ],
         ));
+  }
+
+
+  Future<Future<bool?>> _addItemToCartDialog(Item item) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Item Found'),
+          content: SingleChildScrollView(
+            child: Row(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width*0.3,
+                  child: Image.network(item.itemimgurl),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width*0.3,
+                  child: Column(
+                    children: [
+                      Text(
+                        item.itemname,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                        softWrap: true,
+                      ),
+                      Text("Price: ${item.cost}", style: const TextStyle(fontSize: 20),)
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            SizedBox(
+              width: MediaQuery.of(context).size.width*0.9,
+              child: Row(
+                children: [
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  ),
+                  const Spacer(),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    child: const Text('Add to Cart', style: TextStyle(color: Colors.white),),
+                  )
+                ],
+              ),
+            )
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -250,7 +320,7 @@ class _CartHistoryPage extends StatelessWidget{
           )
     );
   }
-  
+
 }
 
 class _cartpageview extends StatelessWidget {
