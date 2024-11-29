@@ -49,4 +49,4 @@ Once opened, you should just need to start your Android Virtual Device, click th
 
 ## Youtube Video
 Here is a youtube video showcasing the app and all its features!
-> INSERT LINK TO VIDEO HERE
+>https://youtu.be/NZ373rat-a0

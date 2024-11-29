@@ -574,7 +574,6 @@ class _settingspage extends StatelessWidget {
           ),
           SizedBox(height: 16),
 
-          // Expiry Date
           TextField(
             controller: expiryDateController,
             keyboardType: TextInputType.datetime,
@@ -585,7 +584,6 @@ class _settingspage extends StatelessWidget {
           ),
           SizedBox(height: 16),
 
-          // Security Code
           TextField(
             controller: securityCodeController,
             keyboardType: TextInputType.number,
@@ -596,7 +594,6 @@ class _settingspage extends StatelessWidget {
           ),
           SizedBox(height: 24),
 
-          // Add Payment Method Button
           Center(
             child: ElevatedButton(
               onPressed: () {
@@ -610,7 +607,6 @@ class _settingspage extends StatelessWidget {
                   return;
                 }
 
-                // Add new payment method
                 try {
                   final newPaymentMethod = Paymentmethod(
                     cardNumberController.text,
@@ -619,12 +615,10 @@ class _settingspage extends StatelessWidget {
                   );
                   currentuser.addpaymentmethod(newPaymentMethod);
 
-                  // Clear fields
                   cardNumberController.clear();
                   expiryDateController.clear();
                   securityCodeController.clear();
 
-                  // Show success message
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Payment method added successfully!")),
                   );
