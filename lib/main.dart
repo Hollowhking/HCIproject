@@ -378,8 +378,21 @@ class _CartPageViewState extends State<_CartPageView> {
                     children: [
                       IconButton(
                         onPressed: () {
-                          widget.cart.additem(widget.cart.items[index]);
+                          Item item = widget.cart.items[index];
+                          widget.cart.additem(item);
+
+                          final snackbar = SnackBar(
+                            duration: const Duration(seconds: 2),
+                            content: const Text("Undo last added item?"),
+                            action: SnackBarAction(
+                                label: "Undo",
+                                onPressed: () {
+                                  widget.cart.removeItem(item);
+                                  setState(() {});
+                                }),
+                          );
                           setState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
                         },
                         icon: const Icon(Icons.add, color: Colors.white),
                         style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.green)),
@@ -394,8 +407,20 @@ class _CartPageViewState extends State<_CartPageView> {
                       Padding(padding: EdgeInsets.all(3)),
                       IconButton(
                         onPressed: () {
-                          widget.cart.removeItem(widget.cart.items[index]);
+                          Item item = widget.cart.items[index];
+                          widget.cart.removeItem(item);
+
+                          final snackbar = SnackBar(
+                            content: const Text("Undo last removed item?"),
+                            action: SnackBarAction(
+                                label: "Undo",
+                                onPressed: () {
+                                  widget.cart.additem(item);
+                                  setState(() {});
+                                }),
+                          );
                           setState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
                         },
                         icon: const Icon(Icons.remove, color: Colors.white),
                         style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.red)),

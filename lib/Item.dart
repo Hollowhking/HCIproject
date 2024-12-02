@@ -15,10 +15,18 @@ class Cart{
 
   void additem(Item item){
     items.add(item);
+
+    items.sort((a, b) {
+      return a.itemname.compareTo(b.itemname);
+    });
   }
 
   void removeItem(Item item) {
     items.remove(item);
+
+    items.sort((a, b) {
+      return a.itemname.compareTo(b.itemname);
+    });
   }
 
   double gettotal(){
